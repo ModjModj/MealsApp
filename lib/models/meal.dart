@@ -11,7 +11,7 @@ enum Affordability {
 }
 
 class Meal {
-  const Meal({
+  Meal({
     required this.id,
     required this.categories,
     required this.title,
@@ -30,7 +30,7 @@ class Meal {
   final String id;
   final List<String> categories;
   final String title;
-  final String imageUrl;
+  String imageUrl;
   final List<String> ingredients;
   final List<String> steps;
   final int duration;
@@ -40,4 +40,8 @@ class Meal {
   final bool isLactoseFree;
   final bool isVegan;
   final bool isVegetarian;
+}
+
+set imageUrl(String path) {
+  imageUrl = path;
 }

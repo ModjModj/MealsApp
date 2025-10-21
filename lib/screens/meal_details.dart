@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'package:meals/models/meal.dart';
 import 'package:meals/providers/favorites_provider.dart';
 
-class MealDetailsScreen extends ConsumerWidget {
+class MealDetailsScreen extends ConsumerStatefulWidget {
   const MealDetailsScreen({
     super.key,
     required this.meal,
@@ -13,18 +14,38 @@ class MealDetailsScreen extends ConsumerWidget {
   final Meal meal;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MealDetailsScreen> createState() {
+    return _MealDetailsScreenState();
+  }
+}
+
+class _MealDetailsScreenState extends ConsumerState<MealDetailsScreen> {
+  @override
+  Widget build(BuildContext context) {
     final favoriteMeals = ref.watch(favoriteMealsProvider);
 
-    final isFavorite = favoriteMeals.contains(meal);
+    final isFavorite = favoriteMeals.contains(widget.meal);
+
+    final ImagePicker picker = ImagePicker();
+
+    Future<void> changeImage(Meal meal) async {
+      final XFile? selectedImage =
+          await picker.pickImage(source: ImageSource.gallery);
+
+      if (selectedImage != null) {
+        setState(() {
+          meal.imageUrl = selectedImage.path;
+        });
+      }
+    }
 
     return Scaffold(
-        appBar: AppBar(title: Text(meal.title), actions: [
+        appBar: AppBar(title: Text(widget.meal.title), actions: [
           IconButton(
             onPressed: () {
               final wasAdded = ref
                   .read(favoriteMealsProvider.notifier)
-                  .toggleMealFavoriteStatus(meal);
+                  .toggleMealFavoriteStatus(widget.meal);
               ScaffoldMessenger.of(context).clearSnackBars();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -51,14 +72,19 @@ class MealDetailsScreen extends ConsumerWidget {
         body: SingleChildScrollView(
           child: Column(
             children: [
-              Hero(
-                tag: meal.id,
-                child: Image.network(
-                  meal.imageUrl,
-                  height: 300,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
+              GestureDetector(
+                child: Hero(
+                  tag: widget.meal.id,
+                  child: Image.network(
+                    widget.meal.imageUrl,
+                    height: 300,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
                 ),
+                onDoubleTap: () async {
+                  changeImage(widget.meal);
+                },
               ),
               const SizedBox(height: 14),
               Text(
@@ -69,7 +95,7 @@ class MealDetailsScreen extends ConsumerWidget {
                     ),
               ),
               const SizedBox(height: 14),
-              for (final ingredient in meal.ingredients)
+              for (final ingredient in widget.meal.ingredients)
                 Text(
                   ingredient,
                   style: Theme.of(context).textTheme.bodyMedium!.copyWith(
@@ -85,7 +111,7 @@ class MealDetailsScreen extends ConsumerWidget {
                     ),
               ),
               const SizedBox(height: 14),
-              for (final step in meal.steps)
+              for (final step in widget.meal.steps)
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
