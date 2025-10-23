@@ -29,12 +29,17 @@ class _MealDetailsScreenState extends ConsumerState<MealDetailsScreen> {
     final ImagePicker picker = ImagePicker();
 
     Future<void> changeImage(Meal meal) async {
+      String url = meal.imageUrl;
       final XFile? selectedImage =
           await picker.pickImage(source: ImageSource.gallery);
 
       if (selectedImage != null) {
         setState(() {
           meal.imageUrl = selectedImage.path;
+        });
+      } else {
+        setState(() {
+          meal.imageUrl = url;
         });
       }
     }
